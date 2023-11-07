@@ -1,9 +1,11 @@
 <script setup>
 import Title from './components/Title.vue';
 import Button from './components/Button.vue';
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
+import { calcularTotal } from './utils/index';
 const cantidad = ref(5000);
-const plazo = ref(12);
+const plazo = ref(6);
+const total = ref(0);
 const valor = reactive({ valor: 1 });
 
 const MAX = 20000;
@@ -14,12 +16,18 @@ const STEP = 100;
 function handleClick(e) {
   cantidad.value = e.target.value;
 }
-const formatearMoneda = computed(() => {
+watch([cantidad, plazo], () => {
+  total.value = calcularTotal(cantidad.value, plazo.value);
+});
+const formatearMoneda = (valor) => {
   const format = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   });
-  return format.format(cantidad.value);
+  return format.format(valor);
+};
+const totalMensual = computed(() => {
+  return total.value / plazo.value;
 });
 function handleIncrement(e) {
   if (cantidad.value >= MAX) {
@@ -60,7 +68,9 @@ function handleDecrement(e) {
         v-model.number="cantidad"
       />
     </div>
-    <h2 class="text-center text-3xl font-bold">{{ formatearMoneda }}</h2>
+    <h2 class="text-center text-3xl font-bold">
+      {{ formatearMoneda(cantidad) }}
+    </h2>
 
     <h2 class="font-bold text-2xl text-center my-5">Seleccionar Plazo</h2>
     <select
@@ -72,11 +82,18 @@ function handleDecrement(e) {
       <option value="12">12 Meses</option>
       <option value="24">24 Meses</option>
     </select>
-    <div class="p-5 my-5 space-y-5 bg-gray-50 rounded-md">
+    <div v-if="total > 0" class="p-5 my-5 space-y-5 bg-gray-50 rounded-md">
       <h2 class="text-2xl font-semibold text-center">Resumen</h2>
       <p class="text-xl text-center text-gray-500">{{ plazo }} Meses</p>
-      <p class="text-xl text-center text-gray-500">Total a pagar</p>
-      <p class="text-xl text-center text-gray-500">Mensuales</p>
+      <p class="text-xl text-center text-gray-500">
+        Total a pagar: {{ formatearMoneda(total) }}
+      </p>
+      <p class="text-xl text-center text-gray-500">
+        Pago mensual de: {{ formatearMoneda(totalMensual) }}
+      </p>
+    </div>
+    <div v-else class="py-4 text-center font-semibold">
+      <p>Modifica el valor para calcular</p>
     </div>
   </div>
 </template>

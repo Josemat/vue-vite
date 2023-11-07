@@ -14,7 +14,7 @@ function calcularTotal(monto, plazo) {
     } else if (plazo === 12) {
         total *= 1.2
     } else {
-        total *= 1.1
+        total *= 1.3
     }
 
     return total
